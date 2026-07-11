@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Ticket {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  status      String   @default("backlog") // backlog | feasibility | progress | qa | done
+  priority    String   @default("medium")  // low | medium | high | critical
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Int      @default(0)
+
+  // Feasibility
+  feasibilityNotes  String   @default("")
+  feasibilityResult String   @default("") // approved | rejected | needs_work
+  feasibilityAgent  String   @default("openclaw")
+
+  // Development
+  developmentNotes  String   @default("")
+  developmentAgent  String   @default("openclaw")
+  commitSha         String   @default("")
+  branchName        String   @default("")
+
+  // QA
+  qaNotes     String   @default("")
+  qaResult    String   @default("") // passed | failed
+  qaScore     Int      @default(0)  // 1-100
+
+  // Metadata
+  labels      String   @default("[]") // JSON array
+  assignee    String   @default("")
+  reporter    String   @default("user")
+
+  // GitHub sync
+  githubIssueNumber Int?
+  githubIssueUrl    String   @default("")
+
+  // Relations
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+
+  // Activity log
+  activities  Activity[]
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  repoUrl       String   @default("")
+  repoPath      String   @default("")
+  githubRepo    String   @default("") // "owner/repo"
+  webhookSecret String   @default("")
+  createdAt     DateTime @default(now())
+
+  tickets     Ticket[]
+  agents      AgentConfig[]
+}
+
+model AgentConfig {
+  id          String   @id @default(cuid())
+  name        String   // openclaw | claude-code
+  displayName String
+  enabled     Boolean  @default(true)
+  config      String   @default("{}") // JSON config (api keys, endpoints, etc)
+
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // status_change | comment | agent_action | commit
+  message   String
+  metadata  String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+}
