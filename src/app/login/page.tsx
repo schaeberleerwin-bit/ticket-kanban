@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,9 +23,7 @@ function LoginForm() {
     setLoading(false);
 
     if (res.ok) {
-      const next = params.get("next") || "/";
-      const safeNext = next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/";
-      router.push(safeNext);
+      router.push("/");
       router.refresh();
     } else {
       setError("Ungültiges Token");
@@ -55,13 +52,5 @@ function LoginForm() {
         </button>
       </form>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }
