@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 export async function POST(req: NextRequest) {
   const { projectId } = await req.json();
@@ -21,10 +21,10 @@ export async function POST(req: NextRequest) {
 
   let baseBranch = "main";
   try {
-    execSync("git checkout main", { cwd: repoPath, stdio: "pipe" });
+    execFileSync("git", ["checkout", "main"], { cwd: repoPath, stdio: "pipe" });
   } catch {
     try {
-      execSync("git checkout master", { cwd: repoPath, stdio: "pipe" });
+      execFileSync("git", ["checkout", "master"], { cwd: repoPath, stdio: "pipe" });
       baseBranch = "master";
     } catch (err) {
       return NextResponse.json({ error: `Konnte nicht auf main/master wechseln: ${err}` }, { status: 500 });
@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
 
   for (const ticket of doneTickets) {
     try {
-      const output = execSync(`git merge --no-ff "${ticket.branchName}" -m "merge: ${ticket.title}"`, {
-        cwd: repoPath,
-        stdio: "pipe",
-      }).toString();
+      const output = execFileSync(
+        "git",
+        ["merge", "--no-ff", ticket.branchName, "-m", `merge: ${ticket.title}`],
+        { cwd: repoPath, stdio: "pipe" }
+      ).toString();
       results.push({ branch: ticket.branchName, success: true, output });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   let pushError: string | null = null;
   try {
-    execSync(`git push origin ${baseBranch}`, { cwd: repoPath, stdio: "pipe" });
+    execFileSync("git", ["push", "origin", baseBranch], { cwd: repoPath, stdio: "pipe" });
   } catch (err: unknown) {
     // Push optional – kein Hard-Fail wenn kein Remote, aber Fehler wird zurückgemeldet
     pushError = err instanceof Error ? err.message : String(err);

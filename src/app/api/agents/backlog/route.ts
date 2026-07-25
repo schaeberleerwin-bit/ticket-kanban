@@ -21,7 +21,7 @@ function runAgent(agentId: string, prompt: string, cwd: string): Promise<string>
       args = ["agent", "--local", "--json", "--model", model, "--message", prompt];
     }
 
-    const child = spawn(cmd, args, { cwd, timeout: 300_000, shell: true });
+    const child = spawn(cmd, args, { cwd, timeout: 300_000 });
     let stdout = "";
     let stderr = "";
 

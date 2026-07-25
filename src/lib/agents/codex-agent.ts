@@ -14,7 +14,7 @@ function runCodex(prompt: string, cwd: string, timeoutMs = 600_000): Promise<str
     const child = spawn(
       "codex",
       ["exec", "--dangerously-bypass-approvals-and-sandbox", "-C", cwd, "-"],
-      { timeout: timeoutMs, shell: true }
+      { timeout: timeoutMs }
     );
 
     let stdout = "";

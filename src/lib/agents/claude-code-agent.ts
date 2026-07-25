@@ -13,7 +13,6 @@ function runClaudeCode(prompt: string, cwd: string): Promise<string> {
     const child = spawn("claude", ["--print", "--dangerously-skip-permissions", "--output-format", "text"], {
       cwd,
       timeout: 600000,
-      shell: true,
     });
 
     let stdout = "";

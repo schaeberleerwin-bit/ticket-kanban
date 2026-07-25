@@ -14,7 +14,7 @@ function openClawSession(prompt: string, cwd: string, timeoutMs = 300_000): Prom
     const child = spawn(
       "openclaw",
       ["agent", "--local", "--json", "--model", MODEL, "--message", prompt],
-      { cwd, timeout: timeoutMs, shell: true }
+      { cwd, timeout: timeoutMs }
     );
 
     let stdout = "";
