@@ -22,11 +22,13 @@ export async function POST(req: NextRequest) {
   const project = await prisma.project.findFirst({ where: { githubRepo: repo } });
   if (!project) return NextResponse.json({ ok: true }); // no project configured for this repo
 
-  // Verify signature if secret is set
-  if (project.webhookSecret) {
-    const valid = await verifyWebhookSignature(payload, signature, project.webhookSecret);
-    if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  // Webhook-Secret ist Pflicht, sonst wären unauthentifizierte Requests mit bekanntem repository.full_name
+  // (bei öffentlichen Repos kein Geheimnis) in der Lage, Tickets zu erstellen/ändern.
+  if (!project.webhookSecret) {
+    return NextResponse.json({ error: "Webhook secret not configured for this project" }, { status: 401 });
   }
+  const valid = await verifyWebhookSignature(payload, signature, project.webhookSecret);
+  if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
   if (event !== "issues") return NextResponse.json({ ok: true });
 
