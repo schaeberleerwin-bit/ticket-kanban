@@ -24,7 +24,9 @@ function LoginForm() {
     setLoading(false);
 
     if (res.ok) {
-      router.push(params.get("next") || "/");
+      const next = params.get("next") || "/";
+      const safeNext = next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/";
+      router.push(safeNext);
       router.refresh();
     } else {
       setError("Ungültiges Token");
